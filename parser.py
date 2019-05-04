@@ -1,7 +1,7 @@
-import sys
+# import sys
 import json
 import click
-import logging
+# import logging
 from rdflib import Graph, Namespace
 from rdflib.namespace import SKOS, RDFS
 
@@ -19,8 +19,8 @@ def parse_triples(fh, size=1000):
         line_no += 1
         if not line:
             break
-        if line_no % 1000 == 0:
-            print("LINE", line_no)
+        # if line_no % 1000 == 0:
+        #     print("LINE", line_no)
         try:
             graph = Graph()
             graph.parse(data=line, format='nt')
@@ -34,22 +34,27 @@ def parse_triples(fh, size=1000):
 @click.option('-o', '--output', type=click.File('w'), default='-')  # noqa
 def transform(input, output):
     prev = None
-    names = []
+    names = {}
     person = False
     for (s, p, o) in parse_triples(input):
         if s != prev and prev is not None:
             if person and len(set(names)) > 1:
-                output.write(json.dumps(names))
+                data = {str(prev): names}
+                output.write(json.dumps(data))
                 output.write('\n')
                 output.flush()
-            names = []
+            names = {}
             person = False
         prev = s
         if p in [PROP.P31]:
             if o == ENTITY['Q5']:
                 person = True
         if p in [SCHEMA.name, RDFS.label, SKOS.prefLabel, SKOS.altLabel]:
-            names.append(str(o))
+            if o.language not in names:
+                names[o.language] = []
+            name = str(o)
+            if name not in names[o.language]:
+                names[o.language].append(name)
 
 
 if __name__ == '__main__':

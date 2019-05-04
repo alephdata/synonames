@@ -1,3 +1,6 @@
 
+fetch:
+	wget https://dumps.wikimedia.org/wikidatawiki/entities/latest-truthy.nt.bz2
+
 parse:
-	bzcat ~/Data/latest-truthy.nt.bz2 | python parser.py -o names.ijson
+	bzcat latest-truthy.nt.bz2 | python parser.py -o names.ijson
