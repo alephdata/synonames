@@ -1,0 +1,21 @@
+version: "2"
+
+services:
+  db:
+    image: postgres:11
+    volumes:
+      - "./data/postgresql:/var/lib/postgresql/data"
+    environment:
+      POSTGRES_USER: db
+      POSTGRES_PASSWORD: db
+
+  worker:
+    build: .
+    command: bash
+    links:
+      - db
+    volumes:
+      - "./data:/data"
+      - ".:/names"
+    tmpfs:
+      - "/tmp"
