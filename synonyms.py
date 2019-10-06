@@ -17,11 +17,18 @@ QUERY = """SELECT
     ORDER BY COUNT(*) DESC
 ;"""
 
+STOP = [
+    ('jean', 'paul'),
+    ('saud', 'aziz'),
+    ('maria', 'teresa'),
+]
+
 
 @click.command()
 def export():
     engine = get_db()
     mappings = defaultdict(set)
+    expand = defaultdict(set)
     for row in engine.query(QUERY):
         al = row.get('al')
         # an = row.get('an')
@@ -34,18 +41,18 @@ def export():
         # unique.remove(canonical)
         # print(unique, canonical)
         for name in unique:
-            if name == unique:
-                continue
-            mappings[name].add(canonical)
-
-        # num = row.get('num')
-        # meta = '# %s <(%s)> %s\n' % (an, num, bn)
-        # fh.write(meta)
-        # synonyms = ' , '.join(unique)
-        # fh.write('%s => %s\n\n' % (synonyms, canonical))
+            expand[name].update([u for u in unique if u != name])
+            if name != canonical:
+                mappings[name].add(canonical)
 
     with open('synonyms.txt', 'w') as fh:
-        for name, expansions in mappings.items():
+        for name, expansions in sorted(mappings.items()):
+            expansions = ' , '.join(expansions)
+            fh.write('%s => %s\n' % (name, expansions))
+            # print(name, expansions)
+
+    with open('synonyms.expand.txt', 'w') as fh:
+        for name, expansions in sorted(expand.items()):
             expansions = ' , '.join(expansions)
             fh.write('%s => %s\n' % (name, expansions))
             # print(name, expansions)
