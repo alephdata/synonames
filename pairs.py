@@ -1,31 +1,61 @@
-import json
+import os
+import re
+# import json
 import click
-from collections import Counter
+import dataset
+from Levenshtein import distance
 from itertools import combinations
 from normality import ascii_text
+from dataset.chunked import ChunkedInsert
+
+
+def iter_names(engine):
+    table = engine.get_table('names')
+    entity = None
+    names = set()
+    for row in table.find(order_by='uri'):
+        uri = row.get('uri')
+        entity = entity or uri
+        if uri != entity:
+            if len(names):
+                yield names
+            names = set()
+        entity = uri
+        names.add(row.get('name'))
+    if len(names):
+        yield names
 
 
 @click.command()
-@click.option('-i', '--input', type=click.File('r'), default='-')  # noqa
-@click.option('-o', '--output', type=click.File('w'), default='-')  # noqa
-def aggregate(input, output):
-    counter = Counter()
-    while True:
-        line = input.readline()
-        if not line:
-            break
-        tokens = set()
-        for name in json.loads(line):
-            for token in name.split(' '):
-                # token = ascii_text(token)
-                if token and len(token) > 3:
-                    token = token.replace("'", '').lower()
-                    tokens.add(token)
-        for (a, b) in combinations(tokens, 2):
-            a, b = max([a, b]), min([a, b])
-            kw = ':'.join((a, b))
-            counter[kw] += 1
-    print(counter.most_common(100))
+def aggregate():
+    db_uri = os.environ.get('DATABASE_URI')
+    engine = dataset.connect(db_uri)
+    table = engine.get_table('tokens')
+    table.delete()
+    bulk = ChunkedInsert(table, chunksize=10000)
+    rex = re.compile(r'\w+')
+    for names in iter_names(engine):
+        parts = set()
+        for name in names:
+            for token in rex.findall(name):
+                token = token.lower()
+                if len(token) > 3:
+                    parts.add(token)
+        pairs = set()
+        for pair in combinations(parts, 2):
+            pairs.add(tuple(sorted(pair)))
+        for (a, b) in pairs:
+            if abs(len(a) - len(b)) > 5:
+                continue
+            if distance(a, b) > 5:
+                continue
+            bulk.insert({
+                'a': a,
+                'an': ascii_text(a),
+                'b': b,
+                'bn': ascii_text(b),
+            })
+    bulk.flush()
 
 
 if __name__ == '__main__':

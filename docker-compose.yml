@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:11
     volumes:
-      - "./data/postgresql:/var/lib/postgresql/data"
+    - "./data/postgresql:/var/lib/postgresql/data"
     environment:
       POSTGRES_USER: db
       POSTGRES_PASSWORD: db
@@ -13,9 +13,9 @@ services:
     build: .
     command: bash
     links:
-      - db
+    - db
     volumes:
-      - "./data:/data"
-      - ".:/names"
+    - "./data:/data"
+    - ".:/names"
     tmpfs:
-      - "/tmp"
+    - "/tmp"

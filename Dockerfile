@@ -1,6 +1,6 @@
 FROM ubuntu
-RUN apt-get update && apt-get install -y python3 python3-icu python3-pip curl wget postgresql-client locales
-RUN pip3 install click rdflib dataset psycopg2-binary
+RUN apt-get update && apt-get install -y python3 python3-icu python3-pip curl wget postgresql-client locales libpq-dev
+RUN pip3 install click rdflib dataset psycopg2-binary normality pyicu pgcli
 ENV DEBIAN_FRONTEND noninteractive
 
 # Set up the locale and make sure the system uses unicode for the file system.

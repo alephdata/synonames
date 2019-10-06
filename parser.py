@@ -3,8 +3,6 @@ import click
 import dataset
 from rdflib import Graph, Namespace
 from rdflib.namespace import SKOS, RDFS
-
-
 from dataset.chunked import ChunkedInsert
 
 SCHEMA = Namespace("http://schema.org/")
