@@ -1,9 +1,8 @@
-import os
 import click
-import dataset
 from rdflib import Graph, Namespace
 from rdflib.namespace import SKOS, RDFS
 from dataset.chunked import ChunkedInsert
+from common import get_db
 
 SCHEMA = Namespace("http://schema.org/")
 PROP = Namespace("http://www.wikidata.org/prop/direct/")
@@ -32,8 +31,7 @@ def parse_triples(fh, size=1000):
 @click.command()
 @click.option('-i', '--input', type=click.File('r'), default='-')  # noqa
 def transform(input):
-    db_uri = os.environ.get('DATABASE_URI')
-    engine = dataset.connect(db_uri)
+    engine = get_db()
     table = engine.get_table('names')
     bulk = ChunkedInsert(table, chunksize=10000)
     prev = None

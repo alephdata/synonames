@@ -1,12 +1,11 @@
-import os
 import re
 # import json
 import click
-import dataset
 from Levenshtein import distance
 from itertools import combinations
 from normality import ascii_text
 from dataset.chunked import ChunkedInsert
+from common import get_db
 
 
 def iter_names(engine):
@@ -26,10 +25,15 @@ def iter_names(engine):
         yield names
 
 
+def normalize(text):
+    text = ascii_text(text)
+    text = text.replace("'", '')
+    return text
+
+
 @click.command()
 def aggregate():
-    db_uri = os.environ.get('DATABASE_URI')
-    engine = dataset.connect(db_uri)
+    engine = get_db()
     table = engine.get_table('tokens')
     table.delete()
     bulk = ChunkedInsert(table, chunksize=10000)
@@ -51,9 +55,9 @@ def aggregate():
                 continue
             bulk.insert({
                 'a': a,
-                'an': ascii_text(a),
+                'an': normalize(a),
                 'b': b,
-                'bn': ascii_text(b),
+                'bn': normalize(b),
             })
     bulk.flush()
 
