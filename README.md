@@ -5,8 +5,8 @@
 ```sql
 SELECT a, b, COUNT(*) FROM tokens GROUP BY a, b ORDER BY COUNT(*) DESC;
 
-SELECT ARRAY_AGG(a), an, ARRAY_AGG(b), bn, COUNT(*)
-    FROM tokens GROUP BY an, bn ORDER BY COUNT(*) DESC LIMIT 999;
+SELECT ARRAY_AGG(DISTINCT a), an, ARRAY_AGG(DISTINCT b), bn, COUNT(*)
+    FROM tokens WHERE an != bn GROUP BY an, bn ORDER BY COUNT(*) DESC LIMIT 999;
 ```
 
 ### Links
