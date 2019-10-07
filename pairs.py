@@ -49,16 +49,20 @@ def aggregate():
         for pair in combinations(parts, 2):
             pairs.add(tuple(sorted(pair)))
         for (a, b) in pairs:
-            if abs(len(a) - len(b)) > 5:
+            an = normalize(a)
+            bn = normalize(b)
+            if an == bn:
                 continue
-            if distance(a, b) > 5:
-                continue
-            bulk.insert({
-                'a': a,
-                'an': normalize(a),
-                'b': b,
-                'bn': normalize(b),
-            })
+            max_dist = max(len(an), len(bn)) * 0.6
+            dist = distance(an, bn)
+            if dist <= max_dist:
+                print(a, b, max_dist, dist, dist > max_dist)
+                bulk.insert({
+                    'a': a,
+                    'an': an,
+                    'b': b,
+                    'bn': bn,
+                })
     bulk.flush()
 
 

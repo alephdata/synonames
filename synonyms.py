@@ -13,7 +13,7 @@ QUERY = """SELECT
     FROM tokens
     WHERE an != bn
     GROUP BY an, bn
-    HAVING COUNT(*) > 30
+    HAVING COUNT(*) > 10
     ORDER BY COUNT(*) DESC
 ;"""
 
@@ -21,6 +21,15 @@ STOP = [
     ('jean', 'paul'),
     ('saud', 'aziz'),
     ('maria', 'teresa'),
+    ('karl', 'georg'),
+    ('earl', 'george'),
+    ('lord', 'baron'),
+    ('pope', 'papa'),
+    ('anne', 'maria'),
+    ('anna', 'maria'),
+    ('vlad', 'tepes'),
+    ('xaver', 'franz'),
+    ('heinrich', 'friedrich'),
 ]
 
 
