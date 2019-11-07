@@ -1,0 +1,19 @@
+version: "2"
+
+services:
+  db:
+    image: postgres:11
+    volumes:
+    - ./code:/docker-entrypoint-initdb.d/
+    environment:
+      POSTGRES_USER: db
+      POSTGRES_PASSWORD: db
+      POSTGRES_DB: db
+  
+  analysis: 
+    build: .
+    links:
+    - db
+    #volumes:
+    #- .:/code 
+  

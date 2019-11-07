@@ -1,0 +1,10 @@
+numpy 
+pandas 
+networkx == 2.3 
+psycopg2 
+phonetics 
+python-Levenshtein
+normality 
+pyicu
+
+
