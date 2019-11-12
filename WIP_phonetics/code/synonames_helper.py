@@ -67,3 +67,17 @@ def create_patterns(all_phon):
     for value in clean_patterns: 
         phon_patterns.append(input_array[value])
     return phon_patterns 
+
+def find_pollution(uri, name_list, double_check):
+    '''
+    Identifies name lists that have been 'polluted' – where
+    non-synonymous names have been listed together. 
+    '''
+    name_list = set(name_list)
+    double_subset = double_check[double_check["uri"] == uri] 
+    overlap = double_subset["names_split"].apply(lambda x: len(name_list.intersection(x)))
+    if max(overlap) > 1: 
+        check = True 
+    else: 
+        check = False 
+    return check 
