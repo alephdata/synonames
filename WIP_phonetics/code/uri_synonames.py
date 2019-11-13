@@ -142,6 +142,8 @@ for df in pd.read_sql(query, con = conn, chunksize = 500000, params = {'sup_lang
     phon_group["check"] = phon_group.apply((lambda x: find_pollution(x[0], x[2], double_check)), axis = 1)
     phon_group = phon_group.rename(columns={'stack_value':'name'})
 
+    del phon_stack
+
     #Save networkx output 
     nx_df = pd.DataFrame(phon_group["name"].to_list())
     nx_df["uri"] = phon_group.uri.values
@@ -152,12 +154,13 @@ for df in pd.read_sql(query, con = conn, chunksize = 500000, params = {'sup_lang
     nx_df = nx_df.rename(columns = {'value':'name'})
     nx_df[["uri", "pattern_no", "check", "name"]].to_csv("output/names_nodes_nx.csv", mode = 'a', index = False)
 
-
     #Neo4J output 
     phon_group.to_csv("output/names_nodes_neo4j.csv", mode = 'a', index = False)
 
     phon_group["name"] = phon_group["name"].apply(lambda x: ','.join(x))
     phon_group.to_csv("output/names_nodes_str_neo4j.csv",  mode = 'a', index = False)
+
+    del phon_group, nx_df 
 
 print ("FINISHED - uri synonames")
 print ("STARTING - network calculations")
