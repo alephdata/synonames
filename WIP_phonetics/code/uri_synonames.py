@@ -149,7 +149,9 @@ for df in pd.read_sql(query, con = conn, chunksize = 500000, params = {'sup_lang
     nx_df["check"] = phon_group.check.values
     nx_df = pd.melt(nx_df, id_vars = ["uri", "pattern_no", "check"])
     nx_df = nx_df.dropna()
-    nx_df.to_csv("output/names_nodes_nx.csv", mode = 'a', index = False)
+    nx_df = nx_df.rename(columns = {'value':'name'})
+    nx_df[["uri", "pattern_no", "check", "name"]].to_csv("output/names_nodes_nx.csv", mode = 'a', index = False)
+
 
     #Neo4J output 
     phon_group.to_csv("output/names_nodes_neo4j.csv", mode = 'a', index = False)
