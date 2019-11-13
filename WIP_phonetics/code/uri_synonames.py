@@ -17,7 +17,7 @@ from normality import latinize_text, normalize
 import itertools 
 import math
 import networkx as nx 
-from synonames_helper import flag_similar_names, 
+from synonames_helper import flag_similar_names, \
      create_patterns, link_pairs, find_pollution
 
 #Folder set-up
@@ -149,7 +149,7 @@ for df in pd.read_sql(query, con = conn, chunksize = 500000, params = {'sup_lang
     nx_df["check"] = phon_group.check.values
     nx_df = pd.melt(nx_df, id_vars = ["uri", "pattern_no", "check"])
     nx_df = nx_df.dropna()
-    nx_csv.to_csv("output/names_nodes_nx.csv", mode = 'a', index = False)
+    nx_df.to_csv("output/names_nodes_nx.csv", mode = 'a', index = False)
 
     #Neo4J output 
     phon_group.to_csv("output/names_nodes_neo4j.csv", mode = 'a', index = False)
@@ -170,7 +170,7 @@ name_groups = nodes_df.groupby(["uri", "pattern_no", "check"])["name"].apply(lis
 #Create dictionary with weighted edges
 #count - co-occurences; weight - # polluted instances 
 names_dict = {}
-for index, val in enumerate(name_groups):
+for index_val, val in enumerate(name_groups):
     if name_groups.index[index_val][2]:
         weight = 1
     else:
