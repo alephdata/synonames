@@ -18,7 +18,7 @@ import itertools
 import math
 import networkx as nx 
 from synonames_helper import flag_similar_names, \
-     create_patterns, link_pairs, find_pollution
+     create_patterns, link_pairs, find_pollution, del_pollution
 
 #Folder set-up
 dirs = ['./interim', './output', './test_data']
@@ -139,13 +139,14 @@ for df in pd.read_sql(query, con = conn, chunksize = 500000, params = {'sup_lang
     #Flag uris/patterns that have merged names in error
     phon_group = pd.DataFrame(phon_stack.groupby(["uri", "pattern_no"])["stack_value"].apply(list)).reset_index()
     phon_group["stack_value"] = phon_group["stack_value"].apply(lambda x: list(set(x)))
+    phon_group["clean_name"] = phon_group.apply((lambda x: del_pollution(x[0], x[2], double_check)), axis = 1)
     phon_group["check"] = phon_group.apply((lambda x: find_pollution(x[0], x[2], double_check)), axis = 1)
     phon_group = phon_group.rename(columns={'stack_value':'name'})
 
     del phon_stack
 
     #Save networkx output 
-    nx_df = pd.DataFrame(phon_group["name"].to_list())
+    nx_df = pd.DataFrame(phon_group["clean_name"].to_list())
     nx_df["uri"] = phon_group.uri.values
     nx_df["pattern_no"] = phon_group.pattern_no.values
     nx_df["check"] = phon_group.check.values
@@ -154,13 +155,14 @@ for df in pd.read_sql(query, con = conn, chunksize = 500000, params = {'sup_lang
     nx_df = nx_df.rename(columns = {'value':'name'})
     nx_df[["uri", "pattern_no", "check", "name"]].to_csv("output/names_nodes_nx.csv", mode = 'a', index = False)
 
+    del nx_df 
     #Neo4J output 
     phon_group.to_csv("output/names_nodes_neo4j.csv", mode = 'a', index = False)
 
     phon_group["name"] = phon_group["name"].apply(lambda x: ','.join(x))
     phon_group.to_csv("output/names_nodes_str_neo4j.csv",  mode = 'a', index = False)
 
-    del phon_group, nx_df 
+    del phon_group
 
 print ("FINISHED - uri synonames")
 print ("STARTING - network calculations")
@@ -170,6 +172,7 @@ print ("STARTING - network calculations")
 nodes_df = pd.read_csv("output/names_nodes_nx.csv")
 print ("loaded nx data!")
 
+nodes_df["name"] = nodes_df["name"].astype(str)
 name_groups = nodes_df.groupby(["uri", "pattern_no", "check"])["name"].apply(list)
 
 #Create dictionary with weighted edges
@@ -192,6 +195,7 @@ for index_val, val in enumerate(name_groups):
 
 g_data = pd.DataFrame.from_dict(names_dict,'index').reset_index()
 g_data.columns = ['source', 'target', 'count', 'weight']
+g_data.to_csv("check.csv", index = False)
 
 #decide on calculation for weighted edge 
 

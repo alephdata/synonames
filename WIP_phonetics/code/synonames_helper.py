@@ -68,6 +68,22 @@ def create_patterns(all_phon):
         phon_patterns.append(input_array[value])
     return phon_patterns 
 
+def del_pollution(uri, name_list, double_check):
+    '''
+    Deletes pollution (where non-synonymous names from the same uri
+    have merged in same list). 
+    '''
+    name_list = set(name_list)
+    #double_subset = double_check[double_check["uri"] == uri]["names_split"]
+    double_subset = double_check[double_check["uri"] == uri]
+    #overlap = double_subset.apply(lambda x: True if len(name_list.intersection(x)) > 1 else False)
+    del_vals = []
+    double_subset["names_split"].apply(lambda x: del_vals.extend(name_list.intersection(set(x))) if len(name_list.intersection(set(x)))> 1 else "")
+    #del_vals = double_subset[overlap]
+    if del_vals: 
+        name_list = name_list.symmetric_difference(set(del_vals))
+    return list(name_list)
+
 def find_pollution(uri, name_list, double_check):
     '''
     Identifies name lists that have been 'polluted' – where
