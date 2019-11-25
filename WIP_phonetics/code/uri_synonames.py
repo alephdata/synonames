@@ -169,8 +169,9 @@ print ("FINISHED - uri synonames")
 print ("STARTING - network calculations")
 
 #Networkx - create gnetwork, merge identical name nodes
-nodes_df["name"] = nodes_df["name"].astype(str)
 nodes_df = pd.read_csv("interim/names_nodes_nx.csv")
+nodes_df["name"] = nodes_df["name"].astype(str)
+
 print ("loaded nx data!")
 
 #Create dictionary with weighted edges
@@ -178,7 +179,8 @@ name_groups = nodes_df.groupby(["uri", "pattern_no"])["name"].apply(list)
 names_df = pd.DataFrame(name_groups.reset_index())
 
 names_dict = {}
-names_df["name"].apply(lambda x: create_edgelist(x))
+for val in names_df["name"]:
+    names_dict = create_edgelist(val, names_dict)
 
 g_data = pd.DataFrame.from_dict(names_dict,'index').reset_index()
 g_data.columns = ['source', 'target', 'count']

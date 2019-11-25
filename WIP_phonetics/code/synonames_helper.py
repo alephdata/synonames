@@ -99,11 +99,9 @@ def find_pollution(uri, name_list, double_check):
     return check 
 
 
-def create_edgelist(val):
+def create_edgelist(val, names_dict):
     '''
-    
     '''
-    global names_dict
     if len(val) > 1: 
         val = list(set(val))
         val = sorted(val)
@@ -112,3 +110,4 @@ def create_edgelist(val):
                 names_dict[pair]['count'] += 1 
             else:
                 names_dict[pair] = {'count': 1}
+    return names_dict
