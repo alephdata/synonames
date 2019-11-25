@@ -18,7 +18,8 @@ import itertools
 import math
 import networkx as nx 
 from synonames_helper import flag_similar_names, \
-     create_patterns, link_pairs, find_pollution, del_pollution
+     create_patterns, link_pairs, find_pollution, \
+     del_pollution, create_edgelist
 
 #Folder set-up
 dirs = ['./interim', './output', './test_data']
@@ -153,14 +154,14 @@ for df in pd.read_sql(query, con = conn, chunksize = 500000, params = {'sup_lang
     nx_df = pd.melt(nx_df, id_vars = ["uri", "pattern_no", "check"])
     nx_df = nx_df.dropna()
     nx_df = nx_df.rename(columns = {'value':'name'})
-    nx_df[["uri", "pattern_no", "check", "name"]].to_csv("output/names_nodes_nx.csv", mode = 'a', index = False)
+    nx_df[["uri", "pattern_no", "check", "name"]].to_csv("interim/names_nodes_nx.csv", mode = 'a', index = False)
 
     del nx_df 
     #Neo4J output 
-    phon_group.to_csv("output/names_nodes_neo4j.csv", mode = 'a', index = False)
+    phon_group.to_csv("interim/names_nodes_neo4j.csv", mode = 'a', index = False)
 
     phon_group["name"] = phon_group["name"].apply(lambda x: ','.join(x))
-    phon_group.to_csv("output/names_nodes_str_neo4j.csv",  mode = 'a', index = False)
+    phon_group.to_csv("interim/names_nodes_str_neo4j.csv",  mode = 'a', index = False) #convert to str 
 
     del phon_group
 
@@ -168,39 +169,33 @@ print ("FINISHED - uri synonames")
 print ("STARTING - network calculations")
 
 #Networkx - create gnetwork, merge identical name nodes
-#nodes_df = nx_csv 
-nodes_df = pd.read_csv("output/names_nodes_nx.csv")
+nodes_df["name"] = nodes_df["name"].astype(str)
+nodes_df = pd.read_csv("interim/names_nodes_nx.csv")
 print ("loaded nx data!")
 
-nodes_df["name"] = nodes_df["name"].astype(str)
-name_groups = nodes_df.groupby(["uri", "pattern_no", "check"])["name"].apply(list)
-
 #Create dictionary with weighted edges
-#count - co-occurences; weight - # polluted instances 
+name_groups = nodes_df.groupby(["uri", "pattern_no"])["name"].apply(list)
+names_df = pd.DataFrame(name_groups.reset_index())
+
 names_dict = {}
-for index_val, val in enumerate(name_groups):
-    if name_groups.index[index_val][2]:
-        weight = 1
-    else:
-        weight = 0
-    if len(val) > 1: 
-        val = list(set(val))
-        val = sorted(val)
-        for pair in list(itertools.combinations(val, 2)):
-            if pair in names_dict:
-                names_dict[pair]['count'] += 1 
-                names_dict[pair]['weight'] += weight
-            else:
-                names_dict[pair] = {'count': 1, 'weight': 1 * weight}
+names_df["name"].apply(lambda x: create_edgelist(x))
 
 g_data = pd.DataFrame.from_dict(names_dict,'index').reset_index()
-g_data.columns = ['source', 'target', 'count', 'weight']
-g_data.to_csv("check.csv", index = False)
+g_data.columns = ['source', 'target', 'count']
+g_data.to_csv("interim/nx_weighted_edgelist.csv", index = False)
 
-#decide on calculation for weighted edge 
+#Export to elastic search synonym token text format 
+#https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-synonym-tokenfilter.html
+g_data2 = g_data[g_data["count"] > 2]
+g_data2 = g_data2[["source", "target"]]
+np.savetxt('output/elasticsearch_2+.txt', g_data2.values, fmt='%s', delimiter=', ',)
+
+g_data2 = g_data[g_data["count"] > 20]
+g_data2 = g_data2[["source", "target"]]
+np.savetxt('output/elasticsearch_20+.txt', g_data2.values, fmt='%s', delimiter=', ',)
 
 #Import nx graph
-G = nx.from_pandas_edgelist(g_data, 'source', 'target', ['count', 'weight'])
+G = nx.from_pandas_edgelist(g_data, 'source', 'target', ['count'])
 components = nx.connected_component_subgraphs(G)
 
 #Export 
@@ -209,5 +204,5 @@ with open ('output/global_synonames.csv', 'w') as file:
     wr.writerows(list(components))
 file.close()
 
-nx.write_gpickle(G, "output/nx_graph_pickle")
-nx.readwrite.gexf.write_gexf(G, "output/nx_graph_gexf")
+#nx.write_gpickle(G, "output/nx_graph_pickle")
+#nx.readwrite.gexf.write_gexf(G, "output/nx_graph_gexf")
