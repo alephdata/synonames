@@ -1,4 +1,6 @@
 *.bz2
 *.ijson
+
+.DS_Store
 data/
 __pycache__/

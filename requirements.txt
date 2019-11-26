@@ -5,4 +5,7 @@ psycopg2 == 2.8.4
 phonetics == 1.0.5
 python-Levenshtein == 0.12.0
 normality == 2.0.0 
-pyicu == 2.3.1
+click
+rdflib
+dataset
+pgcli

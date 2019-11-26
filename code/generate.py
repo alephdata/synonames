@@ -22,10 +22,8 @@ from synonames_helper import flag_similar_names, \
      del_pollution, create_edgelist
 
 #Folder set-up
-dirs = ['./interim', './output', './test_data']
-for dir in dirs: 
-    if not os.path.exists(dir):
-            os.mkdir(dir)
+OUTPUT_DIR = '/data/output'
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 #Collect data 
 print ("loading")
@@ -110,7 +108,7 @@ for df in pd.read_sql(query, con = conn, chunksize = 500000, params = {'sup_lang
     stack_df["stack_phon"] = stack_df["stack_phon"].apply(lambda x: list(set(x)))
 
     stack_df["lev_dist"] = stack_df["stack_phon"].apply(lambda x: create_patterns(x))
-    stack_df.to_csv("interim/stack_df.csv", index = False)
+    # stack_df.to_csv("interim/stack_df.csv", index = False)
 
     #Create pattern_df with uri, phonetic, pattern number (unique pattern #s per uri)
     pattern_temp = pd.DataFrame(stack_df.lev_dist.to_list())
@@ -154,22 +152,22 @@ for df in pd.read_sql(query, con = conn, chunksize = 500000, params = {'sup_lang
     nx_df = pd.melt(nx_df, id_vars = ["uri", "pattern_no", "check"])
     nx_df = nx_df.dropna()
     nx_df = nx_df.rename(columns = {'value':'name'})
-    nx_df[["uri", "pattern_no", "check", "name"]].to_csv("interim/names_nodes_nx.csv", mode = 'a', index = False)
+    nx_df[["uri", "pattern_no", "check", "name"]].to_csv(os.path.join(OUTPUT_DIR, "names_nodes_nx.csv"), mode = 'a', index = False)
 
     del nx_df 
     #Neo4J output 
-    phon_group.to_csv("interim/names_nodes_neo4j.csv", mode = 'a', index = False)
+    phon_group.to_csv(os.path.join(OUTPUT_DIR, "names_nodes_neo4j.csv"), mode = 'a', index = False)
 
     phon_group["name"] = phon_group["name"].apply(lambda x: ','.join(x))
-    phon_group.to_csv("interim/names_nodes_str_neo4j.csv",  mode = 'a', index = False) #convert to str 
+    phon_group.to_csv(os.path.join(OUTPUT_DIR, "names_nodes_str_neo4j.csv"),  mode = 'a', index = False) #convert to str 
 
     del phon_group
 
-print ("FINISHED - uri synonames")
-print ("STARTING - network calculations")
+print("FINISHED - uri synonames")
+print("STARTING - network calculations")
 
 #Networkx - create gnetwork, merge identical name nodes
-nodes_df = pd.read_csv("interim/names_nodes_nx.csv")
+nodes_df = pd.read_csv(os.path.join(OUTPUT_DIR, "names_nodes_nx.csv"))
 nodes_df["name"] = nodes_df["name"].astype(str)
 
 print ("loaded nx data!")
@@ -184,24 +182,24 @@ for val in names_df["name"]:
 
 g_data = pd.DataFrame.from_dict(names_dict,'index').reset_index()
 g_data.columns = ['source', 'target', 'count']
-g_data.to_csv("interim/nx_weighted_edgelist.csv", index = False)
+g_data.to_csv(os.path.join(OUTPUT_DIR, "nx_weighted_edgelist.csv"), index = False)
 
 #Export to elastic search synonym token text format 
 #https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-synonym-tokenfilter.html
 g_data2 = g_data[g_data["count"] > 2]
 g_data2 = g_data2[["source", "target"]]
-np.savetxt('output/elasticsearch_2+.txt', g_data2.values, fmt='%s', delimiter=', ',)
+np.savetxt(os.path.join(OUTPUT_DIR, "elasticsearch_2+.txt"), g_data2.values, fmt='%s', delimiter=', ',)
 
 g_data2 = g_data[g_data["count"] > 20]
 g_data2 = g_data2[["source", "target"]]
-np.savetxt('output/elasticsearch_20+.txt', g_data2.values, fmt='%s', delimiter=', ',)
+np.savetxt(os.path.join(OUTPUT_DIR, "elasticsearch_20+.txt"), g_data2.values, fmt='%s', delimiter=', ',)
 
 #Import nx graph
 G = nx.from_pandas_edgelist(g_data, 'source', 'target', ['count'])
 components = nx.connected_component_subgraphs(G)
 
 #Export 
-with open ('output/global_synonames.csv', 'w') as file: 
+with open (os.path.join(OUTPUT_DIR, "global_synonames.csv"), 'w') as file: 
     wr = csv.writer(file)
     wr.writerows(list(components))
 file.close()

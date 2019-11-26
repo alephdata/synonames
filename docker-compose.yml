@@ -16,6 +16,6 @@ services:
     - db
     volumes:
     - "./data:/data"
-    - ".:/names"
+    - "./code:/code"
     tmpfs:
     - "/tmp"
