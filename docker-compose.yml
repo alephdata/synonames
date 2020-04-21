@@ -2,7 +2,7 @@ version: "2"
 
 services:
   db:
-    image: postgres:11
+    image: postgres:12
     volumes:
     - "./data/postgresql:/var/lib/postgresql/data"
     environment:
@@ -16,6 +16,6 @@ services:
     - db
     volumes:
     - "./data:/data"
-    - "./code:/code"
+    - ".:/synonames"
     tmpfs:
     - "/tmp"

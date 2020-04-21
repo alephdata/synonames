@@ -1,13 +1,13 @@
 # Name alias generation
 
-### SQL
+`synonames` generates aliases for human names across cultural environments. Names often
+have different spellings in different languages and cultures - for example, Alexander
+can also be Alexandr or Oleksandr. This repository reads a data dump from Wikidata to
+filter out every human name from every language edition of Wikipedia and map them across
+language editions.
 
-```sql
-SELECT a, b, COUNT(*) FROM tokens GROUP BY a, b ORDER BY COUNT(*) DESC;
-
-SELECT ARRAY_AGG(DISTINCT a), an, ARRAY_AGG(DISTINCT b), bn, COUNT(*)
-    FROM tokens WHERE an != bn GROUP BY an, bn ORDER BY COUNT(*) DESC LIMIT 999;
-```
+The resulting file can be used as a set of synonyms, for example to expand search queries
+against a dataset about people.
 
 ### Links
 

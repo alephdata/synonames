@@ -4,15 +4,18 @@ all: run
 build: parse generate
 
 generate:
-	python3 generate.py
+	python src/generate.py
+
+fetch:
+	wget -O /data/latest-truthy.nt.bz2 https://dumps.wikimedia.org/wikidatawiki/entities/latest-truthy.nt.bz2
 
 parse:
-	curl -s https://dumps.wikimedia.org/wikidatawiki/entities/latest-truthy.nt.bz2 | bzcat | python3 parser.py
+	curl -s https://dumps.wikimedia.org/wikidatawiki/entities/latest-truthy.nt.bz2 | bzcat | python3 src/parser.py
 
 build:
-	docker build -t alephdata/synonames .
+	docker-compose build
 
-run: build
+shell:
 	docker-compose run --rm worker bash
 
 down:
