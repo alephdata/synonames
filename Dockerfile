@@ -8,7 +8,14 @@ RUN apt-get -qq -y update \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
 COPY requirements.txt /tmp/
-RUN pip3 install -r /tmp/requirements.txt
+RUN pip3 install \
+    networkx==2.4 \
+    python-Levenshtein==0.12.0 \
+    normality==2.0.0 \
+    click \
+    rdflib \
+    dataset \
+    pgcli
 RUN mkdir /synonames
 WORKDIR /synonames
 COPY src/ Makefile requirements.txt /synonames/
