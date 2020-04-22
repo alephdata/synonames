@@ -15,6 +15,7 @@ RUN pip3 install \
     click \
     rdflib \
     dataset \
+    phonetics \
     pgcli
 RUN mkdir /synonames
 WORKDIR /synonames

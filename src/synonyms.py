@@ -11,7 +11,6 @@ QUERY = """SELECT
         ARRAY_AGG(b) AS bl, bn,
         COUNT(*) AS num
     FROM tokens
-    WHERE an != bn
     GROUP BY an, bn
     HAVING COUNT(*) > 10
     ORDER BY COUNT(*) DESC
