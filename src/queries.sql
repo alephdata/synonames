@@ -8,8 +8,16 @@ SELECT
     SUBSTR(a, 0, 20),
     SUBSTR(MAX(an), 0, 20),
     SUBSTR(b, 0, 20),
-    SUBSTR(bn, 0, 20),
+    SUBSTR(MAX(bn), 0, 20),
     COUNT(*) AS num
 FROM tokens
 GROUP BY a, b
+HAVING COUNT(*) > 10
+ORDER BY COUNT(*) DESC;
+
+
+SELECT
+    COUNT(*) AS num
+FROM tokens
+HAVING COUNT(*) > 50
 ORDER BY COUNT(*) DESC;
