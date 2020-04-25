@@ -7,7 +7,6 @@ RUN apt-get -qq -y update \
         postgresql-client-12 curl wget locales libpq-dev && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
-COPY requirements.txt /tmp/
 RUN pip3 install \
     networkx==2.4 \
     python-Levenshtein==0.12.0 \
@@ -19,6 +18,6 @@ RUN pip3 install \
     pgcli
 RUN mkdir /synonames
 WORKDIR /synonames
-COPY src/ Makefile requirements.txt /synonames/
+COPY src/ Makefile /synonames/
 
 ENV DATABASE_URI postgresql://db:db@db/db
