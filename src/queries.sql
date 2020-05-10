@@ -17,6 +17,16 @@ ORDER BY COUNT(*) DESC;
 
 
 SELECT
+    a as word,
+    b as syno,
+    COUNT(*) AS num
+FROM tokens
+GROUP BY a, b
+HAVING COUNT(*) > 100
+ORDER BY COUNT(*) DESC;
+
+
+SELECT
     COUNT(*) AS num
 FROM tokens
 HAVING COUNT(*) > 50

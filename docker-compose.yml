@@ -8,6 +8,8 @@ services:
     environment:
       POSTGRES_USER: db
       POSTGRES_PASSWORD: db
+    ports:
+    - "127.0.0.1:5439:5432"
 
   worker:
     build: .
