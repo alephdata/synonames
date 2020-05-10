@@ -9,6 +9,9 @@ generate:
 pairs:
 	python3 src/pairs.py
 
+synonyms: pairs
+	python3 src/synonyms.py
+
 /data/latest-truthy.nt.bz2:
 	wget -O /data/latest-truthy.nt.bz2 https://dumps.wikimedia.org/wikidatawiki/entities/latest-truthy.nt.bz2
 
