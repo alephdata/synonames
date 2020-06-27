@@ -3,11 +3,10 @@ import re
 import click
 from Levenshtein import distance
 from itertools import combinations
-from normality import ascii_text
 from dataset.chunked import ChunkedInsert
-from common import get_db
+from common import get_db, normalize
 
-# Filter out non-latin alphabets that we don't support in 
+# Filter out non-latin alphabets that we don't support in
 # other parts of the stack anyway and that will not well
 # survive transliteration:
 SKIP_LANGUAGES = set([
@@ -20,12 +19,6 @@ SKIP_LANGUAGES = set([
     'gu', 'kn', 'ml', 'ne', 'pa', 'as', 'new',
     'bpy', 'sa', 'mai', 'wuu', 'km', 'am', 'dv',
 ])
-
-
-def normalize(text):
-    text = ascii_text(text)
-    text = text.replace("'", '')
-    return text
 
 
 def iter_names(engine):

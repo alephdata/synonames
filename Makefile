@@ -1,10 +1,7 @@
 
 all: shell
 
-build: parse generate
-
-generate:
-	python3 src/generate.py
+build: parse pairs synonyms
 
 pairs:
 	python3 src/pairs.py
