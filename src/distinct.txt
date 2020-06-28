@@ -239,3 +239,4 @@ ahmed, shah
 ahmed, syed
 abdallah, allah
 anders, andersson
+fred, alfred
